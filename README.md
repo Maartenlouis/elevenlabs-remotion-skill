@@ -14,14 +14,14 @@ Generate professional AI voiceovers for [Remotion](https://www.remotion.dev/) vi
 ## Installation
 
 ```bash
-npx skills add maartenvonoesen/elevenlabs-remotion-skill
+npx skills add Maartenlouis/elevenlabs-remotion-skill
 ```
 
 Or manually add to your project:
 
 ```bash
 # Clone to your .claude/skills directory
-git clone https://github.com/maartenvonoesen/elevenlabs-remotion-skill.git .claude/skills/elevenlabs
+git clone https://github.com/Maartenlouis/elevenlabs-remotion-skill.git .claude/skills/elevenlabs
 ```
 
 ## Prerequisites
