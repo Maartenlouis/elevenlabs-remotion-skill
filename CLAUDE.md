@@ -67,24 +67,24 @@ Generate multiple scenes with consistent prosody using ElevenLabs request stitch
 
 ```json
 {
-  "name": "feuchtigkeit",
+  "name": "product-demo",
   "voice": "Antoni",
   "character": "narrator",
   "scenes": [
     {
       "id": "scene1",
-      "text": "Feuchtigkeit im neuen Haus? Das ist ein Schock.",
+      "text": "Welcome to our product demo. This will change everything.",
       "duration": 4.5,
       "character": "dramatic"
     },
     {
       "id": "scene2",
-      "text": "Undichte Keller. Defekte Abdichtung. Versteckte Leckagen.",
+      "text": "Simple setup. Powerful features. Instant results.",
       "duration": 5.5
     },
     {
       "id": "scene3",
-      "text": "Ihre Rechte bei Arglist: Schadensersatz, Kaufpreisminderung, oder Rücktritt.",
+      "text": "Get started today with our free trial. No credit card required.",
       "duration": 8,
       "delay": 0.3
     }
@@ -96,14 +96,14 @@ Generate multiple scenes with consistent prosody using ElevenLabs request stitch
 
 ```bash
 node .claude/skills/elevenlabs/generate.js \
-  --scenes remotion/feuchtigkeit-scenes.json \
-  --output-dir public/audio/feuchtigkeit/
+  --scenes remotion/product-demo-scenes.json \
+  --output-dir public/audio/product-demo/
 ```
 
 This creates:
-- `feuchtigkeit-scene1.mp3` through `sceneN.mp3`
-- `feuchtigkeit-combined.mp3` (all scenes stitched)
-- `feuchtigkeit-info.json` (metadata with durations)
+- `product-demo-scene1.mp3` through `sceneN.mp3`
+- `product-demo-combined.mp3` (all scenes stitched)
+- `product-demo-info.json` (metadata with durations)
 
 ### Single Scene Regeneration
 
@@ -153,12 +153,12 @@ The skill automatically validates timing after generation using `ffprobe`:
 
 ```bash
 # Validate all scenes in a project
-node .claude/skills/elevenlabs/generate.js --validate public/audio/feuchtigkeit/
+node .claude/skills/elevenlabs/generate.js --validate public/audio/product-demo/
 ```
 
 Output example:
 ```
-🔍 Validating feuchtigkeit (6 scenes)
+🔍 Validating product-demo (6 scenes)
 
 ❌ scene1: 3.00s (expected: 4.5s)
    ❌ Audio 1.50s shorter than expected
