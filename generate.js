@@ -373,8 +373,8 @@ async function displayDictionaries() {
   }
 
   console.log('\nUsage:');
-  console.log('  --dictionary vosslegal     # Use local dictionary by name');
-  console.log('  --no-dictionary            # Disable default dictionary');
+  console.log('  --dictionary mybrand       # Use local dictionary by name');
+  console.log('  --no-dictionary            # Disable dictionary');
 }
 
 // ============================================
@@ -580,7 +580,7 @@ function parseArgs() {
     file: null,
     output: 'output.mp3',
     outputDir: null,
-    voice: 'Vossi',
+    voice: 'Antoni',
     model: 'eleven_multilingual_v2',
     stability: 0.5,
     similarity: 0.75,
@@ -596,7 +596,7 @@ function parseArgs() {
     newText: null,
     validate: null,
     skipValidation: false,
-    dictionary: DEFAULT_DICTIONARY,  // Default to vosslegal dictionary
+    dictionary: DEFAULT_DICTIONARY,
     noDictionary: false,
   };
 
@@ -736,13 +736,13 @@ Options:
   --file, -f          Read text from file
   --output, -o        Output file path (default: output.mp3)
   --output-dir        Output directory for scene files
-  --voice, -v         Voice name or ID (default: Vossi)
+  --voice, -v         Voice name or ID (default: Antoni)
   --model, -m         Model ID (default: eleven_multilingual_v2)
   --stability         Voice stability 0-1 (default: 0.5)
   --similarity        Similarity boost 0-1 (default: 0.75)
   --style             Style exaggeration 0-1 (default: 0.0)
   --character, -c     Character preset (narrator, salesperson, expert, etc.)
-  --dictionary, -d    Pronunciation dictionary name (default: vosslegal)
+  --dictionary, -d    Pronunciation dictionary name
   --no-dictionary     Disable pronunciation dictionary
   --scenes            JSON file with scenes for stitched generation
   --scene             Regenerate single scene by ID (use with --scenes)
@@ -765,8 +765,7 @@ Character Presets:
   calm           - Soothing, reassuring, gentle
 
 Pronunciation Dictionaries:
-  The default dictionary (vosslegal) handles brand names like "voss.legal"
-  to ensure proper German pronunciation.
+  Use dictionaries to handle brand names, acronyms, or technical terms.
 
   To create a custom dictionary, add a .pls file to:
     .claude/skills/elevenlabs/dictionaries/
@@ -774,10 +773,10 @@ Pronunciation Dictionaries:
   Example .pls file:
     <?xml version="1.0" encoding="UTF-8"?>
     <lexicon version="1.0" xmlns="http://www.w3.org/2005/01/pronunciation-lexicon"
-        alphabet="ipa" xml:lang="de">
+        alphabet="ipa" xml:lang="en-US">
       <lexeme>
-        <grapheme>voss.legal</grapheme>
-        <alias>Foss Legahl</alias>
+        <grapheme>MyBrand</grapheme>
+        <alias>My Brand</alias>
       </lexeme>
     </lexicon>
 
@@ -790,14 +789,13 @@ Timing Validation:
 
 Scene File Format (scenes.json):
 {
-  "name": "feuchtigkeit",
-  "voice": "Vossi",
+  "name": "my-video",
+  "voice": "Antoni",
   "character": "narrator",
-  "dictionary": "vosslegal",
   "scenes": [
     {
       "id": "scene1",
-      "text": "Text for scene 1",
+      "text": "Welcome to our product demo.",
       "duration": 4,
       "character": "dramatic"
     }
@@ -904,10 +902,10 @@ async function listVoices() {
     );
   });
 
-  console.log('\nRecommended for German:');
-  console.log('  - Vossi (custom German male voice)');
+  console.log('\nRecommended voices:');
   console.log('  - Antoni (professional, warm)');
-  console.log('  - Arnold (authoritative)');
+  console.log('  - Arnold (authoritative, deep)');
+  console.log('  - Josh (friendly, conversational)');
 }
 
 async function getVoiceId(voiceName) {
