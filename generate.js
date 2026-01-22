@@ -32,8 +32,8 @@ const SKILL_DIR = path.dirname(__filename);
 const DICT_DIR = path.join(SKILL_DIR, 'dictionaries');
 const DICT_CACHE_FILE = path.join(SKILL_DIR, '.dictionary-cache.json');
 
-// Default dictionary for voss.legal
-const DEFAULT_DICTIONARY = 'vosslegal';
+// Default dictionary (set to null for no default, or specify your dictionary name)
+const DEFAULT_DICTIONARY = null;
 
 // Load environment variables from .env.local
 function loadEnv() {

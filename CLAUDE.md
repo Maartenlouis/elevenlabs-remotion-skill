@@ -68,7 +68,7 @@ Generate multiple scenes with consistent prosody using ElevenLabs request stitch
 ```json
 {
   "name": "feuchtigkeit",
-  "voice": "Vossi",
+  "voice": "Antoni",
   "character": "narrator",
   "scenes": [
     {
@@ -199,7 +199,7 @@ Use `actualDuration` in your Remotion composition for precise sync.
 | `--file`, `-f` | Read text from file | - |
 | `--output`, `-o` | Output file path | `output.mp3` |
 | `--output-dir` | Output directory for scenes | `public/audio` |
-| `--voice`, `-v` | Voice name or ID | `Vossi` |
+| `--voice`, `-v` | Voice name or ID | `Antoni` |
 | `--model`, `-m` | Model ID | `eleven_multilingual_v2` |
 | `--character`, `-c` | Character preset | `literal` |
 | `--scenes` | JSON file with scenes | - |
@@ -216,7 +216,6 @@ Use `actualDuration` in your Remotion composition for precise sync.
 
 | Voice | Style | Best For |
 |-------|-------|----------|
-| `Vossi` | Professional German male | voss.legal content |
 | `Antoni` | Professional, warm | Legal content, explainers |
 | `Arnold` | Authoritative, deep | Corporate, serious topics |
 | `Josh` | Friendly, conversational | Marketing, casual content |
