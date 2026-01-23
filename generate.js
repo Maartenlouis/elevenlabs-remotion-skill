@@ -935,18 +935,35 @@ async function getVoiceId(voiceName) {
   return voice.voice_id;
 }
 
+// Clamp stability to valid v3 values (0.0, 0.5, 1.0)
+function clampStabilityForV3(stability) {
+  if (stability <= 0.25) return 0.0;
+  if (stability <= 0.75) return 0.5;
+  return 1.0;
+}
+
 async function generateSpeechChunk(text, voiceId, options, previousRequestIds = [], dictionaryLocators = []) {
+  // v3 model requires specific stability values
+  let stability = options.stability;
+  if (options.model === 'eleven_v3') {
+    stability = clampStabilityForV3(stability);
+  }
+
   const requestBody = {
     text: text,
     model_id: options.model,
     voice_settings: {
-      stability: options.stability,
+      stability: stability,
       similarity_boost: options.similarity,
       style: options.style,
       use_speaker_boost: true,
     },
-    previous_request_ids: previousRequestIds,
   };
+
+  // v3 model doesn't support request stitching yet
+  if (options.model !== 'eleven_v3' && previousRequestIds.length > 0) {
+    requestBody.previous_request_ids = previousRequestIds;
+  }
 
   // Add pronunciation dictionary if provided
   if (dictionaryLocators.length > 0) {
