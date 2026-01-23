@@ -1,5 +1,5 @@
 ---
-name: elevenlabs-remotion
+name: remotion-elevenlabs-voiceover
 description: Generate professional AI voiceovers for Remotion videos using ElevenLabs. Use when the user needs to create voiceovers, audio narration, or text-to-speech for video content. Features scene-based generation with request stitching, character presets (narrator, salesperson, expert, dramatic, calm), single scene regeneration, automatic timing validation, and pronunciation dictionaries.
 allowed-tools: Bash(node:*), Bash(npx:*), Bash(ffprobe:*), Bash(ffmpeg:*)
 ---
