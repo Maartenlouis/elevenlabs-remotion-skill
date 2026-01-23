@@ -1,7 +1,7 @@
 ---
 name: remotion-elevenlabs-voiceover
 description: Generate professional AI voiceovers for Remotion videos using ElevenLabs. Use when the user needs to create voiceovers, audio narration, or text-to-speech for video content. Features scene-based generation with request stitching, character presets (narrator, salesperson, expert, dramatic, calm), single scene regeneration, automatic timing validation, and pronunciation dictionaries.
-allowed-tools: Bash(node:*), Bash(npx:*), Bash(ffprobe:*), Bash(ffmpeg:*)
+allowed-tools: Bash(node:*), Bash(npx:*), Bash(ffprobe:*), Bash(ffmpeg:*), Read, Glob, Grep, WebFetch
 ---
 
 # ElevenLabs Voiceover Generation
@@ -11,6 +11,70 @@ Generate professional AI voiceovers for Remotion videos using ElevenLabs API.
 ## Prerequisites
 
 - `ELEVENLABS_API_KEY` in `.env.local`
+
+## Design System Integration
+
+This skill automatically applies design rules when creating Remotion video compositions. The design system controls colors, typography, animations, and component styles.
+
+### Design File Priority
+
+When creating videos, Claude will look for design rules in this order:
+
+1. **Project-specific design file**: `design.md` or `design-system.md` in project root
+2. **Skill default**: `.claude/skills/remotion-elevenlabs-voiceover/design-system.md`
+3. **Auto-extraction**: Extract from existing codebase (see below)
+
+### Before Creating Videos
+
+**IMPORTANT**: Before generating any Remotion video composition, Claude MUST:
+
+1. **Check for design file**:
+   ```bash
+   # Look for design files in project
+   ls design.md design-system.md 2>/dev/null || echo "No design file found"
+   ```
+
+2. **If no design file exists, extract from project**:
+   - Read `app/globals.css` or `styles/globals.css` for CSS variables
+   - Read `tailwind.config.js` or `tailwind.config.ts` for theme colors
+   - Check existing Remotion components in `remotion/` for established patterns
+   - Look for brand assets in `public/` (logo, fonts)
+
+3. **If no project context, check website**:
+   - If user provides a website URL, fetch and extract:
+     - Color palette from CSS/computed styles
+     - Typography (font families, sizes)
+     - Logo and brand elements
+   - Create a `design.md` based on extracted values
+
+### Design Extraction Workflow
+
+When no design file exists:
+
+```
+1. Glob for: globals.css, tailwind.config.*, design.md
+2. Read found files to extract:
+   - CSS custom properties (--primary, --background, etc.)
+   - Tailwind theme extensions (colors, fonts)
+   - Existing component patterns
+3. Check remotion/ folder for existing video components
+4. If user mentions a website:
+   - WebFetch the URL
+   - Extract visible design tokens
+5. Synthesize into consistent design system
+6. Optionally create design.md for future use
+```
+
+### Design System Contents
+
+See `design-system.md` in this skill folder for the full specification including:
+
+- **Colors**: Primary palette, accents, gradients
+- **Typography**: Font families, sizes, weights, text styles
+- **Layout**: Spacing scale, safe zones, video dimensions
+- **Animation**: Timing, springs, easing functions
+- **Components**: Cards, buttons, icons
+- **Scene Types**: Hero, content, feature, CTA patterns
 
 ## Quick Start
 
@@ -312,3 +376,125 @@ node .claude/skills/elevenlabs/generate.js \
 # 5. Update video composition with new duration from info.json
 # 6. Repeat until timing is perfect
 ```
+
+## Complete Video Creation Workflow
+
+When asked to create a promo video or any Remotion video, follow this workflow:
+
+### Step 1: Gather Design Context
+
+```
+1. Check for design.md in project root
+2. Read globals.css for CSS variables
+3. Read tailwind.config.* for theme colors
+4. Check existing remotion/ components for patterns
+5. Note logo path in public/ folder
+```
+
+### Step 2: Create Scene Content
+
+Write a scenes.json file with:
+- Compelling voiceover script (not literal screen text)
+- Character presets per scene (dramatic intro, calm CTA)
+- Appropriate duration estimates
+
+### Step 3: Generate Voiceovers
+
+```bash
+node .claude/skills/remotion-elevenlabs-voiceover/generate.js \
+  --scenes remotion/promo-scenes-{name}.json \
+  --output-dir public/audio/promo-{name}/
+```
+
+### Step 4: Create Remotion Composition
+
+Apply design system to the TSX component:
+
+```tsx
+// ALWAYS define colors from design system
+const COLORS = {
+  navy: "#1E3A5F",      // Primary dark
+  primary: "#2C5282",   // Primary
+  sky: "#A3C4E8",       // Light accent
+  ice: "#E8F1F8",       // Very light
+  white: "#FFFFFF",
+  offWhite: "#FAFAFA",
+  gray: "#6B7280",      // Muted text
+  // Accent colors based on treatment type
+  rose: "#F43F5E",
+  gold: "#D4A574",
+};
+
+// ALWAYS use transition delay for scenes 2+
+const TRANSITION_FRAMES = 18;
+
+const Scene2Content: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  // CRITICAL: Delay animations until after transition
+  const animFrame = Math.max(0, frame - TRANSITION_FRAMES);
+
+  return (
+    <AbsoluteFill>
+      {/* Use animFrame for all animations in scenes 2-5 */}
+      <div style={{
+        opacity: spring({ frame: animFrame, fps, config: { damping: 15 } }),
+      }}>
+        {/* Content */}
+      </div>
+    </AbsoluteFill>
+  );
+};
+```
+
+### Step 5: Audio Placement
+
+**CRITICAL**: Place audio OUTSIDE TransitionSeries to avoid overlap:
+
+```tsx
+export const PromoVideo: React.FC = () => {
+  const { fps } = useVideoConfig();
+
+  // Calculate audio start times accounting for transitions
+  const audio1Start = 0;
+  const audio2Start = scene1Frames - TRANSITION_FRAMES;
+  const audio3Start = audio2Start + scene2Frames - TRANSITION_FRAMES;
+
+  return (
+    <AbsoluteFill>
+      {/* Audio sequences OUTSIDE TransitionSeries */}
+      <Sequence from={audio1Start} durationInFrames={Math.ceil(DURATIONS.scene1 * fps)}>
+        <Audio src={staticFile("audio/promo/scene1.mp3")} />
+      </Sequence>
+      <Sequence from={audio2Start} durationInFrames={Math.ceil(DURATIONS.scene2 * fps)}>
+        <Audio src={staticFile("audio/promo/scene2.mp3")} />
+      </Sequence>
+
+      {/* Visual TransitionSeries */}
+      <TransitionSeries>
+        {/* Scenes without audio */}
+      </TransitionSeries>
+    </AbsoluteFill>
+  );
+};
+```
+
+### Step 6: Register & Render
+
+```bash
+# Add composition to Root.tsx
+# Then render
+npx remotion render CompositionName public/video/output.mp4 --codec h264
+```
+
+## Design System Checklist
+
+Before creating any video, ensure you have:
+
+- [ ] Identified primary brand colors
+- [ ] Identified heading and body fonts
+- [ ] Located logo file path
+- [ ] Noted any accent colors for the content type
+- [ ] Reviewed existing video components for patterns
+- [ ] Set TRANSITION_FRAMES constant (usually 18)
+- [ ] Created animFrame delay for scenes 2+
