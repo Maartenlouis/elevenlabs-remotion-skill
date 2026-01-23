@@ -1,5 +1,5 @@
 ---
-name: elevenlabs
+name: elevenlabs-remotion
 description: Generate professional voiceovers using ElevenLabs AI. Use when the user needs to create voiceovers for videos, audio narration, or text-to-speech content. Supports German and English voices with character presets (narrator, salesperson, expert) for natural delivery. Includes single scene regeneration for fine-tuning.
 allowed-tools: Bash(node:*), Bash(npx:*)
 ---
@@ -16,20 +16,20 @@ Generate professional AI voiceovers for Remotion videos using ElevenLabs API.
 
 ```bash
 # Generate voiceover from text
-node .claude/skills/elevenlabs/generate.js --text "Your text here" --output public/audio/voiceover.mp3
+node .claude/skills/elevenlabs-remotion-skill/generate.js --text "Your text here" --output public/audio/voiceover.mp3
 
 # Generate with narrator style (more natural)
-node .claude/skills/elevenlabs/generate.js --text "Your text" --character narrator --output voiceover.mp3
+node .claude/skills/elevenlabs-remotion-skill/generate.js --text "Your text" --character narrator --output voiceover.mp3
 
 # Generate scenes with request stitching
-node .claude/skills/elevenlabs/generate.js --scenes remotion/scenes.json --output-dir public/audio/project/
+node .claude/skills/elevenlabs-remotion-skill/generate.js --scenes remotion/scenes.json --output-dir public/audio/project/
 
 # Regenerate a single scene
-node .claude/skills/elevenlabs/generate.js --scenes scenes.json --scene scene2 --new-text "Updated text"
+node .claude/skills/elevenlabs-remotion-skill/generate.js --scenes scenes.json --scene scene2 --new-text "Updated text"
 
 # List available voices and character presets
-node .claude/skills/elevenlabs/generate.js --list-voices
-node .claude/skills/elevenlabs/generate.js --list-characters
+node .claude/skills/elevenlabs-remotion-skill/generate.js --list-voices
+node .claude/skills/elevenlabs-remotion-skill/generate.js --list-characters
 ```
 
 ## Character Presets
@@ -48,7 +48,7 @@ Use character presets for more natural voiceovers instead of literal screen text
 
 ```bash
 # Use narrator style globally
-node .claude/skills/elevenlabs/generate.js --scenes scenes.json --character narrator --output-dir public/audio/
+node .claude/skills/elevenlabs-remotion-skill/generate.js --scenes scenes.json --character narrator --output-dir public/audio/
 
 # Or set per-scene in scenes.json
 {
@@ -95,7 +95,7 @@ Generate multiple scenes with consistent prosody using ElevenLabs request stitch
 ### Generate All Scenes
 
 ```bash
-node .claude/skills/elevenlabs/generate.js \
+node .claude/skills/elevenlabs-remotion-skill/generate.js \
   --scenes remotion/feuchtigkeit-scenes.json \
   --output-dir public/audio/feuchtigkeit/
 ```
@@ -111,21 +111,21 @@ If a scene starts too early, has wrong timing, or needs different text:
 
 ```bash
 # Regenerate scene2 with new text
-node .claude/skills/elevenlabs/generate.js \
+node .claude/skills/elevenlabs-remotion-skill/generate.js \
   --scenes remotion/scenes.json \
   --scene scene2 \
   --new-text "Updated scene 2 text" \
   --output-dir public/audio/project/
 
 # Regenerate scene3 with different character
-node .claude/skills/elevenlabs/generate.js \
+node .claude/skills/elevenlabs-remotion-skill/generate.js \
   --scenes remotion/scenes.json \
   --scene scene3 \
   --character salesperson \
   --output-dir public/audio/project/
 
 # Just regenerate (same text, same character)
-node .claude/skills/elevenlabs/generate.js \
+node .claude/skills/elevenlabs-remotion-skill/generate.js \
   --scenes remotion/scenes.json \
   --scene scene1 \
   --output-dir public/audio/project/
@@ -153,7 +153,7 @@ The skill automatically validates timing after generation using `ffprobe`:
 
 ```bash
 # Validate all scenes in a project
-node .claude/skills/elevenlabs/generate.js --validate public/audio/feuchtigkeit/
+node .claude/skills/elevenlabs-remotion-skill/generate.js --validate public/audio/feuchtigkeit/
 ```
 
 Output example:
@@ -272,14 +272,14 @@ export const VideoWithVoiceover: React.FC = () => {
 ```bash
 # 1. Create scenes.json with your script
 # 2. Generate all scenes with narrator style
-node .claude/skills/elevenlabs/generate.js \
+node .claude/skills/elevenlabs-remotion-skill/generate.js \
   --scenes remotion/my-video-scenes.json \
   --character narrator \
   --output-dir public/audio/my-video/
 
 # 3. Preview in Remotion, notice scene2 starts too early
 # 4. Regenerate just scene2 with updated text
-node .claude/skills/elevenlabs/generate.js \
+node .claude/skills/elevenlabs-remotion-skill/generate.js \
   --scenes remotion/my-video-scenes.json \
   --scene scene2 \
   --new-text "Slightly longer text to fill the visual timing" \
