@@ -212,6 +212,31 @@ Use `actualDuration` in your Remotion composition for precise sync.
 | `--style` | Style exaggeration (0-1) | varies by character |
 | `--no-combined` | Skip combined file | false |
 
+## Models
+
+ElevenLabs offers different TTS models. Use `--model` to select:
+
+| Model | ID | Best For |
+|-------|-----|----------|
+| **Multilingual v2** | `eleven_multilingual_v2` | Default. Great for German, stable, reliable |
+| **Multilingual v3** | `eleven_multilingual_v3` | Newer model, potentially better quality |
+| **Turbo v2.5** | `eleven_turbo_v2_5` | Faster generation, English-optimized |
+
+```bash
+# Use v3 model for higher quality
+node .claude/skills/remotion-elevenlabs-voiceover/generate.js \
+  --scenes remotion/scenes.json \
+  --model eleven_multilingual_v3 \
+  --output-dir public/audio/project/
+
+# Or set in scenes.json
+{
+  "name": "my-project",
+  "model": "eleven_multilingual_v3",
+  "scenes": [...]
+}
+```
+
 ## Recommended Voices
 
 | Voice | Style | Best For |

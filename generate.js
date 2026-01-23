@@ -1176,11 +1176,15 @@ async function generateScenes(scenesFile, options) {
   const globalCharacter = options.character || config.character || 'literal';
   const dictName = options.noDictionary ? null : (options.dictionary || config.dictionary || DEFAULT_DICTIONARY);
 
+  // Allow model override from scenes.json
+  const model = config.model || options.model;
+  options.model = model; // Update options for downstream use
+
   const outputDir = options.outputDir || path.dirname(options.output) || 'public/audio';
 
   console.log(`\n🎬 Generating ${scenes.length} scenes with Request Stitching`);
   console.log(`   Voice: ${voiceName}`);
-  console.log(`   Model: ${options.model}`);
+  console.log(`   Model: ${model}`);
   console.log(`   Character: ${globalCharacter}`);
   if (dictName) console.log(`   Dictionary: ${dictName}`);
   console.log(`   Output: ${outputDir}/`);
