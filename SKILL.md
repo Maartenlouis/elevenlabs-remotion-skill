@@ -1,6 +1,6 @@
 ---
 name: elevenlabs-remotion
-description: Generate professional voiceovers using ElevenLabs AI. Use when the user needs to create voiceovers for videos, audio narration, or text-to-speech content. Supports German and English voices with character presets (narrator, salesperson, expert) for natural delivery. Includes single scene regeneration for fine-tuning.
+description: Generate professional voiceovers using ElevenLabs AI. Use when the user needs to create voiceovers for videos, audio narration, or text-to-speech content. Supports multiple voices with character presets (narrator, salesperson, expert) for natural delivery. Includes single scene regeneration for fine-tuning.
 allowed-tools: Bash(node:*), Bash(npx:*)
 ---
 
@@ -67,25 +67,25 @@ Generate multiple scenes with consistent prosody using ElevenLabs request stitch
 
 ```json
 {
-  "name": "feuchtigkeit",
-  "voice": "Vossi",
+  "name": "product-demo",
+  "voice": "George",
   "character": "narrator",
   "scenes": [
     {
       "id": "scene1",
-      "text": "Feuchtigkeit im neuen Haus? Das ist ein Schock.",
+      "text": "Generic text-to-speech sounds robotic. Your brand deserves better.",
       "duration": 4.5,
       "character": "dramatic"
     },
     {
       "id": "scene2",
-      "text": "Undichte Keller. Defekte Abdichtung. Versteckte Leckagen.",
+      "text": "With voice cloning, you can use your own voice for unlimited content.",
       "duration": 5.5
     },
     {
       "id": "scene3",
-      "text": "Ihre Rechte bei Arglist: Schadensersatz, Kaufpreisminderung, oder Rücktritt.",
-      "duration": 8,
+      "text": "Record a short sample. Clone it. Create professional voiceovers in minutes.",
+      "duration": 6,
       "delay": 0.3
     }
   ]
@@ -96,14 +96,14 @@ Generate multiple scenes with consistent prosody using ElevenLabs request stitch
 
 ```bash
 node .claude/skills/elevenlabs-remotion-skill/generate.js \
-  --scenes remotion/feuchtigkeit-scenes.json \
-  --output-dir public/audio/feuchtigkeit/
+  --scenes remotion/product-demo-scenes.json \
+  --output-dir public/audio/product-demo/
 ```
 
 This creates:
-- `feuchtigkeit-scene1.mp3` through `sceneN.mp3`
-- `feuchtigkeit-combined.mp3` (all scenes stitched)
-- `feuchtigkeit-info.json` (metadata with durations)
+- `product-demo-scene1.mp3` through `sceneN.mp3`
+- `product-demo-combined.mp3` (all scenes stitched)
+- `product-demo-info.json` (metadata with durations)
 
 ### Single Scene Regeneration
 
@@ -129,12 +129,60 @@ node .claude/skills/elevenlabs-remotion-skill/generate.js \
   --scenes remotion/scenes.json \
   --scene scene1 \
   --output-dir public/audio/project/
+
+# Embed a thumbnail into an MP4 video
+node .claude/skills/elevenlabs-remotion-skill/generate.js \
+  --embed-thumbnail public/videos/my-video.mp4 \
+  --thumbnail public/videos/my-thumbnail.png \
+  --output public/videos/my-video-with-thumb.mp4
 ```
 
 The tool automatically:
 - Uses request stitching from previous scenes for consistent prosody
 - Updates the info.json file with new metadata
 - Updates scenes.json if `--new-text` is provided
+
+## Thumbnail Embedding
+
+Embed a thumbnail image into MP4 videos so platforms like Twitter, YouTube, and video players display your custom thumbnail instead of the first frame.
+
+### Embed Thumbnail into Video
+
+```bash
+# Basic usage - outputs to video-thumb.mp4
+node .claude/skills/elevenlabs-remotion-skill/generate.js \
+  --embed-thumbnail public/videos/promo.mp4 \
+  --thumbnail public/videos/thumbnail.png
+
+# Custom output path
+node .claude/skills/elevenlabs-remotion-skill/generate.js \
+  --embed-thumbnail public/videos/promo.mp4 \
+  --thumbnail public/videos/thumbnail.png \
+  --output public/videos/promo-final.mp4
+```
+
+### Workflow with Remotion
+
+```bash
+# 1. Render your video
+npx remotion render MyVideo public/videos/my-video.mp4
+
+# 2. Render your thumbnail (use Still composition)
+npx remotion still MyVideoThumbnail public/videos/my-thumbnail.png
+
+# 3. Embed the thumbnail
+node .claude/skills/elevenlabs-remotion-skill/generate.js \
+  --embed-thumbnail public/videos/my-video.mp4 \
+  --thumbnail public/videos/my-thumbnail.png \
+  --output public/videos/my-video-final.mp4
+```
+
+### Supported Formats
+
+- **Video**: MP4 (H.264/H.265)
+- **Thumbnail**: PNG, JPG, JPEG
+
+The embedding uses ffmpeg's `-disposition:v:1 attached_pic` flag to set the thumbnail as an attached picture, which most video players and platforms recognize.
 
 ## Timing Validation
 
@@ -147,18 +195,18 @@ The skill automatically validates timing after generation using `ffprobe`:
 | Duration mismatch | >15% | Warns if actual differs from expected duration |
 | Leading silence | >200ms | Audio starts late (voiceover delayed) |
 | Trailing silence | >500ms | Unnecessary silence at end |
-| Speaking rate | 2-4.5 wps | Optimal ~3 words/second for German |
+| Speaking rate | 2-4.5 wps | Optimal ~3 words/second |
 
 ### Validate Existing Audio
 
 ```bash
 # Validate all scenes in a project
-node .claude/skills/elevenlabs-remotion-skill/generate.js --validate public/audio/feuchtigkeit/
+node .claude/skills/elevenlabs-remotion-skill/generate.js --validate public/audio/product-demo/
 ```
 
 Output example:
 ```
-🔍 Validating feuchtigkeit (6 scenes)
+🔍 Validating product-demo (6 scenes)
 
 ❌ scene1: 3.00s (expected: 4.5s)
    ❌ Audio 1.50s shorter than expected
@@ -199,7 +247,7 @@ Use `actualDuration` in your Remotion composition for precise sync.
 | `--file`, `-f` | Read text from file | - |
 | `--output`, `-o` | Output file path | `output.mp3` |
 | `--output-dir` | Output directory for scenes | `public/audio` |
-| `--voice`, `-v` | Voice name or ID | `Vossi` |
+| `--voice`, `-v` | Voice name or ID | `George` |
 | `--model`, `-m` | Model ID | `eleven_multilingual_v2` |
 | `--character`, `-c` | Character preset | `literal` |
 | `--scenes` | JSON file with scenes | - |
@@ -207,6 +255,8 @@ Use `actualDuration` in your Remotion composition for precise sync.
 | `--new-text` | New text for scene regen | - |
 | `--validate` | Validate existing audio dir | - |
 | `--skip-validation` | Skip auto-validation | false |
+| `--embed-thumbnail` | Video file to embed thumbnail into | - |
+| `--thumbnail` | Thumbnail image file (PNG/JPG) | - |
 | `--stability` | Voice stability (0-1) | varies by character |
 | `--similarity` | Voice similarity (0-1) | varies by character |
 | `--style` | Style exaggeration (0-1) | varies by character |
@@ -216,8 +266,8 @@ Use `actualDuration` in your Remotion composition for precise sync.
 
 | Voice | Style | Best For |
 |-------|-------|----------|
-| `Vossi` | Professional German male | voss.legal content |
-| `Antoni` | Professional, warm | Legal content, explainers |
+| `George` | Warm, captivating British | Narration, explainers |
+| `Antoni` | Professional, warm | Legal content, tutorials |
 | `Arnold` | Authoritative, deep | Corporate, serious topics |
 | `Josh` | Friendly, conversational | Marketing, casual content |
 
@@ -261,8 +311,8 @@ export const VideoWithVoiceover: React.FC = () => {
 
 1. **Use character presets**: Don't read screen text literally - use `narrator` or `expert` for natural flow
 2. **Punctuation matters**: Use periods for pauses, commas for brief breaks
-3. **Numbers**: Write out numbers ("fünfhundert" not "500")
-4. **Abbreviations**: Write full words ("vierundzwanzig Stunden" not "24h")
+3. **Numbers**: Write out numbers ("five hundred" not "500") for natural speech
+4. **Abbreviations**: Write full words ("twenty-four hours" not "24h")
 5. **Scene-by-scene**: Different scenes can have different characters (dramatic intro, calm CTA)
 6. **Fine-tune**: Use `--scene` to regenerate individual scenes without redoing everything
 7. **Request stitching**: Keeps voice consistent across all scenes

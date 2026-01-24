@@ -20,6 +20,7 @@
  *   node generate.js --validate public/audio/project/
  *   node generate.js --list-voices
  *   node generate.js --list-dictionaries
+ *   node generate.js --embed-thumbnail video.mp4 --thumbnail thumb.png --output video-with-thumb.mp4
  */
 
 const fs = require('fs');
@@ -580,7 +581,7 @@ function parseArgs() {
     file: null,
     output: 'output.mp3',
     outputDir: null,
-    voice: 'Antoni',
+    voice: 'George',
     model: 'eleven_multilingual_v2',
     stability: 0.5,
     similarity: 0.75,
@@ -598,6 +599,8 @@ function parseArgs() {
     skipValidation: false,
     dictionary: DEFAULT_DICTIONARY,
     noDictionary: false,
+    embedThumbnail: null,
+    thumbnail: null,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -695,6 +698,14 @@ function parseArgs() {
         options.noDictionary = true;
         options.dictionary = null;
         break;
+      case '--embed-thumbnail':
+        options.embedThumbnail = nextArg;
+        i++;
+        break;
+      case '--thumbnail':
+        options.thumbnail = nextArg;
+        i++;
+        break;
       case '--help':
       case '-h':
         printHelp();
@@ -730,13 +741,14 @@ Usage:
   node generate.js --list-voices
   node generate.js --list-characters
   node generate.js --list-dictionaries
+  node generate.js --embed-thumbnail video.mp4 --thumbnail thumb.png -o video-with-thumb.mp4
 
 Options:
   --text, -t          Text to convert to speech
   --file, -f          Read text from file
   --output, -o        Output file path (default: output.mp3)
   --output-dir        Output directory for scene files
-  --voice, -v         Voice name or ID (default: Antoni)
+  --voice, -v         Voice name or ID (default: George)
   --model, -m         Model ID (default: eleven_multilingual_v2)
   --stability         Voice stability 0-1 (default: 0.5)
   --similarity        Similarity boost 0-1 (default: 0.75)
@@ -750,6 +762,8 @@ Options:
   --no-combined       Don't create combined file (scenes mode only)
   --validate          Validate timing of generated audio in directory
   --skip-validation   Skip automatic validation after generation
+  --embed-thumbnail   Video file to embed thumbnail into
+  --thumbnail         Thumbnail image file (PNG/JPG)
   --list-voices       List all available voices
   --list-characters   List all character presets
   --list-dictionaries List pronunciation dictionaries
@@ -790,7 +804,7 @@ Timing Validation:
 Scene File Format (scenes.json):
 {
   "name": "my-video",
-  "voice": "Antoni",
+  "voice": "George",
   "character": "narrator",
   "scenes": [
     {
@@ -903,6 +917,7 @@ async function listVoices() {
   });
 
   console.log('\nRecommended voices:');
+  console.log('  - George (warm, captivating British)');
   console.log('  - Antoni (professional, warm)');
   console.log('  - Arnold (authoritative, deep)');
   console.log('  - Josh (friendly, conversational)');
@@ -991,6 +1006,61 @@ async function generateSpeechChunk(text, voiceId, options, previousRequestIds = 
     requestId: response.requestId,
     characterCost: response.characterCost,
   };
+}
+
+// ============================================
+// THUMBNAIL EMBEDDING FUNCTION
+// ============================================
+
+/**
+ * Embed a thumbnail image into an MP4 video file using ffmpeg
+ * This sets the thumbnail that video players and social platforms display
+ */
+function embedThumbnail(videoPath, thumbnailPath, outputPath) {
+  if (!fs.existsSync(videoPath)) {
+    throw new Error(`Video file not found: ${videoPath}`);
+  }
+  if (!fs.existsSync(thumbnailPath)) {
+    throw new Error(`Thumbnail file not found: ${thumbnailPath}`);
+  }
+
+  console.log(`\n🖼️  Embedding thumbnail into video`);
+  console.log(`   Video: ${videoPath}`);
+  console.log(`   Thumbnail: ${thumbnailPath}`);
+  console.log(`   Output: ${outputPath}`);
+  console.log('');
+
+  // Create output directory if needed
+  const outputDir = path.dirname(outputPath);
+  if (outputDir && !fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  try {
+    // Use ffmpeg to embed the thumbnail as an attached picture
+    // -map 0 = take all streams from first input (video)
+    // -map 1 = take all streams from second input (thumbnail)
+    // -c copy = copy streams without re-encoding (fast)
+    // -disposition:v:1 attached_pic = mark second video stream as thumbnail
+    execSync(
+      `ffmpeg -y -i "${videoPath}" -i "${thumbnailPath}" -map 0 -map 1 -c copy -disposition:v:1 attached_pic "${outputPath}"`,
+      { encoding: 'utf-8', stdio: 'pipe' }
+    );
+
+    const stats = fs.statSync(outputPath);
+    console.log(`✅ Thumbnail embedded successfully!`);
+    console.log(`   Output: ${outputPath} (${(stats.size / 1024 / 1024).toFixed(2)} MB)`);
+
+    return outputPath;
+  } catch (error) {
+    // Check if ffmpeg is available
+    try {
+      execSync('ffmpeg -version', { stdio: 'pipe' });
+    } catch {
+      throw new Error('ffmpeg not found. Please install ffmpeg to embed thumbnails.');
+    }
+    throw new Error(`Failed to embed thumbnail: ${error.message}`);
+  }
 }
 
 // ============================================
@@ -1383,6 +1453,16 @@ async function main() {
 
     if (options.validate) {
       await validateProject(options.validate);
+      return;
+    }
+
+    if (options.embedThumbnail) {
+      if (!options.thumbnail) {
+        console.error('Error: --thumbnail is required when using --embed-thumbnail');
+        process.exit(1);
+      }
+      const outputPath = options.output !== 'output.mp3' ? options.output : options.embedThumbnail.replace(/\.mp4$/, '-thumb.mp4');
+      embedThumbnail(options.embedThumbnail, options.thumbnail, outputPath);
       return;
     }
 
